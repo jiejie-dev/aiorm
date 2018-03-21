@@ -1,18 +1,23 @@
 import logging
 
-from norms.connections.mysql_connection import MysqlConnection
-from norms.query import types
-from norms.query.query_compiler import QueryCompiler, MysqlQueryCompiler
+from norm.connections.mysql_connection import MySQLConnection
+from norm.query import types
+from norm.query.query_compiler import QueryCompiler, MySQLQueryCompiler
 
-_logger = logging.getLogger('norms')
+_logger = logging.getLogger('norm')
 
 
 class SchemaManager(object):
-    def __init__(self, connection: MysqlConnection):
+    """ To manage tables, do actions linke create_table, drop_table."""
+
+    def __init__(self, connection: MySQLConnection = None):
+        self.connection = connection
+
+    def initalize(self, connection: MySQLConnection):
         self.connection = connection
 
     async def show_tables(self):
-        sql = MysqlQueryCompiler.templates.get(types.SHOW_TABLES)
+        sql = MySQLQueryCompiler.templates.get(types.SHOW_TABLES)
         rs = await self.connection.select(sql)
 
         def get_tables():

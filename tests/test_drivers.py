@@ -1,14 +1,16 @@
-from norms.connections.connections import IConnection
-from norms.drivers import MysqlDataBaseDriver
+import mock
+
+from norm.connections.connections import IConnection
+from norm.drivers import MySQLDataBaseDriver, DriverManager
 import pytest
-from tests.base import configs
+from tests.configtest import configs
 
 
 @pytest.fixture()
 async def driver(event_loop):
-    driver = MysqlDataBaseDriver()
+    driver = MySQLDataBaseDriver()
 
-    await driver.initialize(event_loop, configs)
+    await driver.initialize(event_loop, configs['mysql'])
     return driver
 
 
@@ -19,9 +21,9 @@ async def connection(driver):
 
 @pytest.mark.asyncio
 async def test_get_connection(event_loop):
-    driver = MysqlDataBaseDriver()
+    driver = MySQLDataBaseDriver()
 
-    await driver.initialize(event_loop, configs)
+    await driver.initialize(event_loop, configs['mysql'])
 
     connection = await driver.get_connection()
     assert connection is not None
@@ -31,5 +33,14 @@ async def test_get_connection(event_loop):
 
 @pytest.mark.asyncio
 async def test_fixture(driver, connection):
-    assert isinstance(driver, MysqlDataBaseDriver)
+    assert isinstance(driver, MySQLDataBaseDriver)
     assert isinstance(connection, IConnection)
+
+
+@pytest.mark.asyncio
+async def test_driver_manager(event_loop):
+    manager = DriverManager()
+    manager.initialize(event_loop, configs)
+
+    get_driver = manager.get_driver('mysql')
+    assert isinstance(get_driver, MySQLDataBaseDriver)

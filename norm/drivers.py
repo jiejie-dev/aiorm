@@ -2,9 +2,9 @@ import asyncio
 
 import aiomysql
 
-from norms.connections.connections import IConnection
-from norms.connections.mysql_connection import MysqlConnection
-from norms.query.query_compiler import MysqlQueryCompiler
+from norm.connections.connections import IConnection
+from norm.connections.mysql_connection import MySQLConnection
+from norm.query.query_compiler import MySQLQueryCompiler
 
 
 class DataBaseDriver(object):
@@ -19,7 +19,10 @@ class DataBaseDriver(object):
         raise NotImplementedError()
 
 
-class MysqlDataBaseDriver(DataBaseDriver):
+class MySQLDataBaseDriver(DataBaseDriver):
+    """ A database driver represent a home to store connection pool and provider connection"""
+    NAME = 'MYSQL'
+
     async def initialize(self, loop: asyncio.AbstractEventLoop, configs: dict):
         kw = configs
         self.__pool = await aiomysql.create_pool(
@@ -37,20 +40,29 @@ class MysqlDataBaseDriver(DataBaseDriver):
 
     async def get_connection(self) -> IConnection:
         _conn = await self.__pool.acquire()
-        return MysqlConnection(_conn, compiler=MysqlQueryCompiler())
-
-    @property
-    def name(self):
-        return 'MYSQL'
+        return MySQLConnection(_conn, compiler=MySQLQueryCompiler())
 
 
 class DriverManager(object):
+    """ Manage database drivers"""
 
     def __init__(self):
         self.drivers = {}
 
-    def get_driver(self, name):
-        return self.drivers[name]
+        self.drivers[MySQLDataBaseDriver.NAME.lower()] = MySQLDataBaseDriver
+
+    def initialize(self, loop, configs: dict):
+        self.loop = loop
+        self.configs = configs
+
+    def get_driver(self, name=None) -> DataBaseDriver:
+        if not name:
+            name = self.configs['default']
+        driver_class = self.drivers[name]
+        driver = driver_class()
+        db_config = self.configs[name]
+        driver.initialize(self.loop, db_config)
+        return driver
 
     def register(self, name, driver):
         self.drivers[name] = driver

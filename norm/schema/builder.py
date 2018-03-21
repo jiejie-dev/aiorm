@@ -1,5 +1,5 @@
 class SchemaBuilder(object):
-
+    """ A sql builder for SchemaManager"""
     def create_tables(self, tables):
         return '\n'.join([self.create_table(x) for x in tables])
 
@@ -17,5 +17,5 @@ class SchemaBuilder(object):
         return 'DROP TABLE {} IF EXISTS '.format(getattr(table, '__table__'))
 
 
-class MysqlSchemaBuilder(SchemaBuilder):
+class MySQLSchemaBuilder(SchemaBuilder):
     pass

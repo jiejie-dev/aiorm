@@ -1,6 +1,6 @@
-from norms.models.model_base import create_args_string
-from norms.query import types
-from norms.query.query_base import Query
+from norm.models.utils import create_args_string
+from norm.query import types
+from norm.query.query_base import Query
 
 
 class QueryCompiler(object):
@@ -19,21 +19,25 @@ class QueryCompiler(object):
         return sql
 
 
-class MysqlQueryCompiler(QueryCompiler):
+class MySQLQueryCompiler(QueryCompiler):
     templates = {
-        types.SELECT: "SELECT {query_fields} FROM {TABLE_NAME}{WHERE}{order_by}{LIMIT}{OFFSET}".lower(),
-        types.INSERT: "INSERT INTO table_name ({FIELDS}) VALUES ({VALUES})".lower(),
-        types.SHOW_TABLES: "SHOW TABLES"
+        types.SELECT: "SELECT {query_fields} FROM {_table_name}{_join}{_where}{_order_by}{_limit}{_offset}",
+        types.INSERT: "INSERT INTO {_table_name} ({_fields}) VALUES ({_values})",
+        types.SHOW_TABLES: "SHOW TABLES",
+        types.DELETE: "DELETE FROM {_table_name} WHERE {_where}"
     }
 
     def compile(self, query):
         if query.method == types.SELECT:
-            return self.compile_select_query(query)
+            return self.compile_select(query)
         if query.method == types.INSERT:
             return self.compile_insert(query.data)
         return query, None
 
-    def compile_select_query(self, query: Query):
+    def compile_select(self, query: Query):
+        join_builds = [x.build() for x in query._join]
+        join_str = ' '.join(join_builds)
+
         if query._where is not None:
             where_strs, where_args = query._where.build()
             query._args.extend(where_args)
@@ -46,10 +50,15 @@ class MysqlQueryCompiler(QueryCompiler):
         limit_str = ' LIMIT {}'.format(query._limit) if query._limit > 0 else ''
 
         offset_str = ' OFFSET {}'.format(query._offset) if query._offset > 0 else ''
+        t = self.templates[query.method]
 
-        return self.templates[query.method].format(query_fields='*', table_name=query.table_name,
-                                                   where=' WHERE' + where_strs, order_by=orderby_str,
-                                                   limit=limit_str, offset=offset_str), tuple(query._args)
+        return t.format(query_fields='*',
+                        _table_name=query.table_name,
+                        _join=join_str,
+                        _where=' WHERE' + where_strs if where_strs != '' else '',
+                        _order_by=orderby_str,
+                        _limit=limit_str,
+                        _offset=offset_str), tuple(query._args)
 
     def compile_insert(self, data):
         table_name = getattr(data, '__table__')
@@ -69,3 +78,6 @@ class MysqlQueryCompiler(QueryCompiler):
             data.__table__, ', '.join(map(lambda f: '`%s`=?' % (self.__mappings__.get(f).name or f), data.__fields__)),
             data.__primary_key__)
         return template, tuple(args)
+
+    def compile_delete(self, query_or_data):
+        pass

@@ -1,15 +1,15 @@
 import pytest
 
-from norms.connections.connections import IConnection, Connection
-from norms.connections.mysql_connection import MysqlConnection
+from norm.connections.connections import IConnection, Connection
+from norm.connections.mysql_connection import MySQLConnection
 import mock
 
-from tests.base import Demo
+from tests.configtest import Demo
 
 
 @pytest.mark.asyncio
 async def test_mysql_connection():
-    connection = MysqlConnection(None)
+    connection = MySQLConnection(None)
     assert isinstance(connection, IConnection)
 
 

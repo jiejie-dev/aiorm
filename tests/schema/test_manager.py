@@ -1,7 +1,7 @@
 import pytest
 
-from norms.schema.manager import SchemaManager
-from tests.base import Demo
+from norm.schema.manager import SchemaManager
+from tests.configtest import DemoUser
 from tests.test_drivers import driver, connection
 
 
@@ -22,4 +22,4 @@ async def test_show_tables(schema_manager):
 
 @pytest.mark.asyncio
 async def test_create_tables(schema_manager: SchemaManager):
-    await schema_manager.create_tables([Demo])
+    await schema_manager.create_tables([DemoUser])

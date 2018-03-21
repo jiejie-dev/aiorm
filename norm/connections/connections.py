@@ -4,8 +4,8 @@ from logging import Logger
 
 import aiomysql
 
-from norms.query.query_base import Query
-from norms.query.query_compiler import QueryCompiler
+from norm.query.query_base import Query
+from norm.query.query_compiler import QueryCompiler
 
 
 class IConnection(object):

@@ -1,6 +1,8 @@
 import logging
 
-_logger = logging.getLogger('norms')
+from norm.models.fields import ForeignKeyField
+
+_logger = logging.getLogger('norm')
 
 
 class QueryImpl(object):
@@ -82,7 +84,50 @@ class OrderbyAscImpl(OrderbyImpl):
         super(OrderbyAscImpl, self).__init__(field_name, sc='ASC')
 
 
+class ResolveJoinRelationRefError(Exception):
+    pass
+
+
+def _foregin_fields(model):
+    for key, val in model.__mappings__.items():
+        if isinstance(val, ForeignKeyField):
+            yield val
+
+
+def resolve_relation_ref(left, right):
+    left_foreign_fields = _foregin_fields(left)
+    right_foregin_fields = _foregin_fields(right)
+
+    for item in left_foreign_fields:
+        if issubclass(right, item.fk_model):
+            return "{}.{}_id".format(left.__table__, item.name), "{}.{}".format(right.__table__, right.__primary_key__)
+
+    for item in right_foregin_fields:
+        if issubclass(left, item.fk_model):
+            return "{}.{}_id".format(right.__table__, item.name), "{}.{}".format(left.__table__, left.__primary_key__)
+
+    raise ResolveJoinRelationRefError()
+
+
+class JoinClause(object):
+    def __init__(self, left, right, type='INNER'):
+        self.left = left
+        self.right = right
+        self.type = type
+
+    def build(self):
+        t = " {type} JOIN {right} ON {left_rel_field} = {right_rel_field}"
+        left_rel_field, right_rel_field = resolve_relation_ref(self.left, self.right)
+
+        return t.format(type=self.type,
+                        right=self.right.__table__,
+                        left_rel_field=left_rel_field,
+                        right_rel_field=right_rel_field)
+
+
 class Query(object):
+    """ Represent a query like select, insert, update, delete"""
+
     def __init__(self, model):
         self.model = model
         self.table_name = getattr(model, '__table__', None)
@@ -96,6 +141,8 @@ class Query(object):
         self._args = []
 
         self.method = None
+
+        self._join = []
 
     def select(self):
         self.method = 'SELECT'
@@ -128,4 +175,9 @@ class Query(object):
 
     def order_by_desc(self, model_field):
         self._orderby.append(OrderbyDescImpl(model_field))
+        return self
+
+    def join(self, model, type="INNER"):
+        last_model = self._join[-1].right if len(self._join) > 0 else self.model
+        self._join.append(JoinClause(last_model, model, type))
         return self

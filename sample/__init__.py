@@ -1,8 +1,9 @@
 import asyncio
 
-from norms.drivers import MysqlDataBaseDriver
-from norms.models.model_base import Model, StringField
-from norms.schema.manager import SchemaManager
+from norm.drivers import MySQLDataBaseDriver
+from norm.models.model_base import Model, StringField
+from norm.query.query_base import Query
+from norm.schema.manager import SchemaManager
 
 configs = {
     'user': 'root',
@@ -16,14 +17,17 @@ class Demo2(Model):
     name = StringField(primary_key=True)
     test = StringField()
 
+
 async def main(loop):
-    driver = MysqlDataBaseDriver()
+    driver = MySQLDataBaseDriver()
     await driver.initialize(loop=loop, configs=configs)
     db = await driver.get_connection()
     schema = SchemaManager(db)
     await schema.drop_tables([Demo2])
     await schema.create_tables([Demo2])
     await db.insert(Demo2(name="aaa"))
+    items = await db.select(Query(Demo2).select())
+    assert isinstance(items, list) and len(items) == 1
 
 
 loop = asyncio.get_event_loop()
