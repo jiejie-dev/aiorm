@@ -4,7 +4,7 @@ from norm.query.query_base import Query, _foregin_fields
 from norm.query.query_compiler import MySQLQueryCompiler
 import pytest
 
-from tests.configtest import DemoUserProfile, DemoUser, DemoPermission
+from sample.norm_bench import DemoUserProfile, DemoUser, DemoPermission
 
 
 @pytest.fixture()
@@ -24,7 +24,7 @@ def test_select_query():
     query = Query(DemoUser).select().where(DemoUser.name == 'lujiejie')
     compiler = MySQLQueryCompiler()
     rs = compiler.compile(query)
-    assert rs[0].lower() == "SELECT * FROM Demo WHERE ( demo.name = ? )".lower()
+    assert rs[0].lower() == "SELECT * FROM DemoUser WHERE ( demouser.name = ? )".lower()
     assert rs[1][0] == "lujiejie"
 
 

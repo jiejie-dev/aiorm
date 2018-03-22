@@ -1,17 +1,22 @@
 from norm.schema.builder import SchemaBuilder
-from tests.configtest import DemoUser, DemoUserProfile
+from sample.models import DemoUser, DemoUserProfile
 from unittest import TestCase
 
-
 class TestSchemaBuilderCase(TestCase):
+    def setUp(self):
+        self.builder = SchemaBuilder()
+
     def test_schema_builder(self):
-        builder = SchemaBuilder()
-        sql = builder.create_table(DemoUser)
-        assert sql is not None
-        assert sql.startswith('CREATE TABLE Demo')
-        sql = builder.drop_table(DemoUser)
-        assert sql == 'DROP TABLE DemoUser IF EXISTS '
+        sql = self.builder.create_table(DemoUser)
+        assert sql == """CREATE TABLE DemoUser (
+	id VARCHAR(40) primary key,
+	name varchar(100) 
+)"""
+        sql = self.builder.drop_table(DemoUser)
+        assert sql == """DROP TABLE DemoUser IF EXISTS """
+
+    def test_drop_tables(self):
+        sql = self.builder.drop_tables([DemoUser, DemoUserProfile])
 
     def test_schema_with_foreign(self):
-        builder = SchemaBuilder()
-        self.assertRaises(Exception, builder.create_tables([DemoUserProfile]))
+        self.assertRaises(Exception, self.builder.create_tables([DemoUserProfile]))

@@ -1,7 +1,7 @@
 import mock
 
 from norm.connections.connections import IConnection
-from norm.drivers import MySQLDataBaseDriver, DriverManager
+from norm.drivers import MySQLDataBaseDriver, DataBaseEngine
 import pytest
 from tests.configtest import configs
 
@@ -39,7 +39,7 @@ async def test_fixture(driver, connection):
 
 @pytest.mark.asyncio
 async def test_driver_manager(event_loop):
-    manager = DriverManager()
+    manager = DataBaseEngine()
     manager.initialize(event_loop, configs)
 
     get_driver = manager.get_driver('mysql')

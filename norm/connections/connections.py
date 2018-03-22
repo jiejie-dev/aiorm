@@ -6,6 +6,7 @@ import aiomysql
 
 from norm.query.query_base import Query
 from norm.query.query_compiler import QueryCompiler
+from aiocontext import async_contextmanager
 
 
 class IConnection(object):
@@ -46,16 +47,12 @@ class Connection(IConnection):
         self._connection = conn
         self.compiler = compiler
 
-        self.logger = logger if logger is not None else logging.getLogger('connection')
+        self.logger = logger if logger is not None else logging.getLogger('norm')
         self.logger.setLevel(logging.DEBUG)
 
-    async def new_execute_cursor(self) -> aiomysql.Cursor:
-        return await self._connection.cursor()
+        self._transactions = 0
 
-    async def new_select_cursor(self) -> aiomysql.DictCursor:
-        return await self._connection.cursor(aiomysql.DictCursor)
-
-    @contextmanager
+    @async_contextmanager
     async def transaction(self):
         await self.begin_transaction()
 
@@ -91,13 +88,16 @@ class Connection(IConnection):
     def transaction_level(self):
         return self._transactions
 
+    async def new_cursor(self):
+        pass
+
     async def execute(self, sql, args=None):
-        cursor = await self.new_execute_cursor()
-        self.logger.debug(sql, args)
+        cursor = await self.new_cursor()
+        # self.logger.debug(sql, args)
         await cursor.execute(sql, args)
-        affected = cursor.rowcount
-        await cursor.close()
-        return affected
+        # affected = cursor.rowcount
+        # await cursor.close()
+        # return affected
 
     async def insert(self, query_or_data):
 
@@ -108,15 +108,15 @@ class Connection(IConnection):
 
         exe_query, args = self.compiler.compile(query)
 
-        cursor = await self.new_execute_cursor()
+        cursor = await self.new_cursor()
 
-        self.logger.debug(self.compiler.raw_sql(query))
-        print(exe_query, args)
+        # self.logger.debug(self.compiler.raw_sql(query))
+
         await cursor.execute(exe_query, args)
 
-        affected = cursor.rowcount
-        await cursor.close()
-        return affected
+        # affected = cursor.rowcount
+        # await cursor.close()
+        # return affected
 
     async def select(self, query):
         if isinstance(query, Query):
@@ -124,7 +124,7 @@ class Connection(IConnection):
         else:
             exe_query, args = query, None
 
-        cursor = await self.new_select_cursor()
+        cursor = await self.new_cursor()
 
         self.logger.debug(self.compiler.raw_sql(exe_query), args)
 

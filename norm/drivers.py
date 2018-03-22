@@ -43,7 +43,7 @@ class MySQLDataBaseDriver(DataBaseDriver):
         return MySQLConnection(_conn, compiler=MySQLQueryCompiler())
 
 
-class DriverManager(object):
+class DataBaseEngine(object):
     """ Manage database drivers"""
 
     def __init__(self):
@@ -64,5 +64,5 @@ class DriverManager(object):
         driver.initialize(self.loop, db_config)
         return driver
 
-    def register(self, name, driver):
+    def register_driver(self, name, driver):
         self.drivers[name] = driver

@@ -3,14 +3,14 @@ import uuid
 
 from norm.models import utils
 from norm.models.fields import Field
-from norm.query.query_base import QueryImpl
+from norm.query.query_base import QueryClause
 
 _logger = logging.getLogger('norm')
 
 
 class ModelMetaclass(type):
     def __getattr__(self, item):
-        return QueryImpl(left='{}.{}'.format(getattr(self, '__table__'), item))
+        return QueryClause(left='{}.{}'.format(getattr(self, '__table__'), item))
 
     def __new__(cls, name, bases, attrs):
         if name == 'Model':

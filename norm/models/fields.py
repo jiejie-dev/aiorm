@@ -1,7 +1,5 @@
 import uuid
 
-from norm.models.utils import resolver_fk_column_type
-
 
 class Field(object):
 
@@ -54,11 +52,16 @@ class TextField(Field):
 class UUIDField(Field):
 
     def __init__(self, name=None, primary_key=False, default=uuid.uuid4):
-        super(UUIDField, self).__init__(name, 'VARCHAR(40)', primary_key, default)
+        super(UUIDField, self).__init__(name, 'VARCHAR(40)', primary_key, lambda: str(default()))
 
 
 class ForeignKeyField(Field):
     def __init__(self, fk_model, name=None, related_name=None, default=None, null=True):
+
         self.fk_model = fk_model
         self.releated_name = related_name
-        super(ForeignKeyField, self).__init__(name, resolver_fk_column_type(fk_model), False, default)
+        if isinstance(fk_model, str):
+            colunm_type = None
+        else:
+            colunm_type = fk_model.__mappings__[fk_model.__primary_key__].column_type
+        super(ForeignKeyField, self).__init__(name, colunm_type, False, default)

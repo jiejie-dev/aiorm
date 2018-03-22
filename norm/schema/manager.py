@@ -3,6 +3,7 @@ import logging
 from norm.connections.mysql_connection import MySQLConnection
 from norm.query import types
 from norm.query.query_compiler import QueryCompiler, MySQLQueryCompiler
+from norm.schema.builder import SchemaBuilder, MySQLSchemaBuilder
 
 _logger = logging.getLogger('norm')
 
@@ -10,8 +11,9 @@ _logger = logging.getLogger('norm')
 class SchemaManager(object):
     """ To manage tables, do actions linke create_table, drop_table."""
 
-    def __init__(self, connection: MySQLConnection = None):
+    def __init__(self, connection: MySQLConnection = None, builder: SchemaBuilder = None):
         self.connection = connection
+        self.builder = builder or MySQLSchemaBuilder()
 
     def initalize(self, connection: MySQLConnection):
         self.connection = connection
@@ -29,35 +31,22 @@ class SchemaManager(object):
         return tables
 
     async def create_tables(self, tables, safe=True):
-        def get_create_table_sql():
-            for item in tables:
-                args = []
-                for f_name, f in getattr(item, '__mappings__').items():
-                    args.append(str(f))
-                sql = 'CREATE TABLE {} ({})'.format(getattr(item, '__table__'), ',\n\t'.join(args))
-                yield sql
-
-        sqls = list(get_create_table_sql())
+        sql = self.builder.create_tables(tables)
         try:
-            await self.connection.execute('\n'.join(sqls), None)
+            await self.connection.execute(sql, None)
         except Exception as e:
             _logger.exception(e)
             if not safe:
                 raise Exception('Create Table Error')
 
     async def drop_tables(self, tables, safe=True):
-        def get_drop_table_sql():
-            for item in tables:
-                sql = 'DROP TABLE {}'.format(getattr(item, '__table__'))
-                yield sql
-
-        sqls = list(get_drop_table_sql())
+        sql = self.builder.drop_tables(tables)
         try:
-            await self.connection.execute('\n'.join(sqls))
+            await self.connection.execute(sql)
         except Exception as e:
             _logger.exception(e)
             if not safe:
-                raise Exception('Create Table Error')
+                raise Exception('Drop Table Error')
 
     async def add_table_column(self, table, column_name, column_type, column_default):
         pass

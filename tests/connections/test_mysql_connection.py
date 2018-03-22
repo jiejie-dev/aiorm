@@ -4,7 +4,7 @@ from norm.connections.connections import IConnection, Connection
 from norm.connections.mysql_connection import MySQLConnection
 import mock
 
-from tests.configtest import Demo
+from sample.norm_bench import DemoUser
 
 
 @pytest.mark.asyncio
@@ -23,7 +23,7 @@ class ConnectionTestCase(object):
         connection.insert = mock.MagicMock(return_value=1)
 
         with connection.transaction():
-            connection.insert(Demo())
+            connection.insert(DemoUser())
 
         connection.begin_transaction.assert_called_once()
         connection.commit.assert_called_once()
@@ -35,7 +35,7 @@ class ConnectionTestCase(object):
 
         try:
             with connection.transaction():
-                connection.insert(Demo())
+                connection.insert(DemoUser())
                 raise Exception('foo')
         except Exception as e:
             self.assertEqual('foo', str(e))

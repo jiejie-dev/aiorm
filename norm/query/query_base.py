@@ -5,7 +5,7 @@ from norm.models.fields import ForeignKeyField
 _logger = logging.getLogger('norm')
 
 
-class QueryImpl(object):
+class QueryClause(object):
     def __init__(self, left=None, op=None, right=None):
         self.left = left
         self.op = op
@@ -13,7 +13,7 @@ class QueryImpl(object):
         self.args = []
 
     def name(self):
-        return self.left.name() if isinstance(self.left, QueryImpl) else str(self.left)
+        return self.left.name() if isinstance(self.left, QueryClause) else str(self.left)
 
     def build(self, strs=None, args=None):
         if strs is None:
@@ -21,7 +21,7 @@ class QueryImpl(object):
         if args is None:
             args = []
 
-        if isinstance(self.left, QueryImpl):
+        if isinstance(self.left, QueryClause):
             strs.append('(')
 
         if self.left:
@@ -29,13 +29,13 @@ class QueryImpl(object):
         if self.op:
             strs.append(self.op)
         if self.right:
-            if isinstance(self.right, QueryImpl):
+            if isinstance(self.right, QueryClause):
                 strs, args = self.right.build(strs, args)
             else:
                 args.append(str(self.right))
                 strs.append('?')
 
-        if isinstance(self.left, QueryImpl):
+        if isinstance(self.left, QueryClause):
             strs.append(')')
 
         return ' '.join(strs), args
@@ -44,25 +44,25 @@ class QueryImpl(object):
         return '{}{}{}'.format(self.left, self.op, self.right)
 
     def __eq__(self, other):
-        return QueryImpl(self, '=', other)
+        return QueryClause(self, '=', other)
 
     def __le__(self, other):
-        return QueryImpl(self, '<=', other)
+        return QueryClause(self, '<=', other)
 
     def __ge__(self, other):
-        return QueryImpl(self, '>=', other)
+        return QueryClause(self, '>=', other)
 
     def __lt__(self, other):
-        return QueryImpl(self, '<', other)
+        return QueryClause(self, '<', other)
 
     def __gt__(self, other):
-        return QueryImpl(self, '>', other)
+        return QueryClause(self, '>', other)
 
     def __and__(self, other):
-        return QueryImpl(left=self, op='and', right=other)
+        return QueryClause(left=self, op='and', right=other)
 
     def __or__(self, other):
-        return QueryImpl(left=self, op='or', right=other)
+        return QueryClause(left=self, op='or', right=other)
 
 
 class OrderbyImpl(object):

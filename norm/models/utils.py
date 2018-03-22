@@ -8,6 +8,3 @@ def create_args_string(num):
 
 def escaped_fields(fields):
     return list(map(lambda f: '`%s`' % f, fields))
-
-def resolver_fk_column_type(model):
-    pass
