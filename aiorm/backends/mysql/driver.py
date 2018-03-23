@@ -1,9 +1,9 @@
 import aiomysql
 import asyncio
 
-from norm.backends.base import DataBaseDriver
-from norm.backends.mysql.compiler import MySQLQueryCompiler
-from norm.orm.connections import AbstractConnection, Connection
+from aiorm.backends.base import DataBaseDriver
+from aiorm.backends.mysql.compiler import MySQLQueryCompiler
+from aiorm.orm.connections import Connection
 
 
 class MySQLDataBaseDriver(DataBaseDriver):

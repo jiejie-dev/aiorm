@@ -1,8 +1,8 @@
 import logging
 
-from norm.orm.fields import ForeignKeyField
+from aiorm.orm.fields import ForeignKeyField
 
-_logger = logging.getLogger('norm')
+_logger = logging.getLogger('aiorm')
 
 
 class QueryClause(object):

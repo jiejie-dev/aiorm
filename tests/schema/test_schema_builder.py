@@ -1,4 +1,4 @@
-from norm.orm.schema import SchemaBuilder
+from aiorm.orm.schema import SchemaBuilder
 from sample.models import DemoUser, DemoUserProfile
 from unittest import TestCase
 

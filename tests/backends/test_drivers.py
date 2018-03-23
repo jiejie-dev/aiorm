@@ -1,8 +1,8 @@
 
 import pytest
 
-from norm.backends.mysql.driver import MySQLDataBaseDriver
-from norm.orm.connections import Connection
+from aiorm.backends.mysql.driver import MySQLDataBaseDriver
+from aiorm.orm.connections import Connection
 from sample.models import configs
 
 

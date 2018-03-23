@@ -1,8 +1,8 @@
 import pytest
 
-from norm.backends.mysql.driver import MySQLDataBaseDriver
-from norm.orm.connections import Connection
-from norm.orm.contexts import Demo
+from aiorm.backends.mysql.driver import MySQLDataBaseDriver
+from aiorm.orm.connections import Connection
+from aiorm.orm.contexts import Demo
 
 
 @pytest.mark.asyncio

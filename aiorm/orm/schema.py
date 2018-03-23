@@ -1,8 +1,8 @@
 import logging
 
-from norm.orm.connections import AbstractConnection
+from aiorm.orm.connections import AbstractConnection
 
-_logger = logging.getLogger('norm')
+_logger = logging.getLogger('aiorm')
 
 
 class SchemaBuilder(object):

@@ -1,5 +1,5 @@
-from norm.models.fields import UUIDField, StringField, ForeignKeyField
-from norm.models.model_base import Model
+from aiorm.orm.fields import StringField, UUIDField, ForeignKeyField
+from aiorm.orm.models import Model
 
 configs = {
     'default': 'mysql',

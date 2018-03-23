@@ -1,6 +1,6 @@
 import pytest
 
-from norm.orm.schema import SchemaManager, SchemaBuilder
+from aiorm.orm.schema import SchemaManager, SchemaBuilder
 from sample.models import DemoUser
 
 

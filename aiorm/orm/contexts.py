@@ -1,5 +1,5 @@
-from norm.orm.fields import UUIDField, StringField
-from norm.orm.models import Model
+from aiorm.orm.fields import UUIDField, StringField
+from aiorm.orm.models import Model
 
 
 class DbSet(object):

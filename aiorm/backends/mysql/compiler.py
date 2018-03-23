@@ -1,5 +1,5 @@
-from norm.orm.query import QueryCompiler, Query, SelectQuery, InsertQuery
-from norm.orm.utils import create_args_string
+from aiorm.orm.query import QueryCompiler, Query, SelectQuery, InsertQuery
+from aiorm.orm.utils import create_args_string
 
 
 class MySQLQueryCompiler(QueryCompiler):

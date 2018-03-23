@@ -1,0 +1,39 @@
+{
+    "_meta": {
+        "hash": {
+            "sha256": "65b82d4c4fbefae3360c978178cc17d21c84fe2053f8d30623f70dfe33c08fc7"
+        },
+        "host-environment-markers": {
+            "implementation_name": "cpython",
+            "implementation_version": "3.5.1",
+            "os_name": "posix",
+            "platform_machine": "x86_64",
+            "platform_python_implementation": "CPython",
+            "platform_release": "17.4.0",
+            "platform_system": "Darwin",
+            "platform_version": "Darwin Kernel Version 17.4.0: Sun Dec 17 09:19:54 PST 2017; root:xnu-4570.41.2~1/RELEASE_X86_64",
+            "python_full_version": "3.5.1",
+            "python_version": "3.5",
+            "sys_platform": "darwin"
+        },
+        "pipfile-spec": 6,
+        "requires": {},
+        "sources": [
+            {
+                "name": "pypi",
+                "url": "https://pypi.python.org/simple",
+                "verify_ssl": true
+            }
+        ]
+    },
+    "default": {
+        "sqlparse": {
+            "hashes": [
+                "sha256:d9cf190f51cbb26da0412247dfe4fb5f4098edb73db84e02f9fc21fdca31fed4",
+                "sha256:ce028444cfab83be538752a2ffdb56bc417b7784ff35bb9a3062413717807dec"
+            ],
+            "version": "==0.2.4"
+        }
+    },
+    "develop": {}
+}

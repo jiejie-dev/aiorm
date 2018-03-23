@@ -1,7 +1,7 @@
 import pytest
 
-from norm.backends.mysql.compiler import MySQLQueryCompiler
-from norm.orm.query import _foregin_fields, SelectQuery
+from aiorm.backends.mysql.compiler import MySQLQueryCompiler
+from aiorm.orm.query import _foregin_fields, SelectQuery
 from sample.norm_bench import DemoUserProfile, DemoUser, DemoPermission
 
 

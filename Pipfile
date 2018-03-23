@@ -1,0 +1,16 @@
+[[source]]
+url = "https://pypi.python.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+aiomysql = "*"
+asyncio-contextmanager = "*"
+
+[dev-packages]
+pytest = "*"
+mock = "*"
+sqlparse = "*"
+
+[requires]
+python_version = "3.6"

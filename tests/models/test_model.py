@@ -1,5 +1,5 @@
-from norm.orm.contexts import Demo
-from norm.orm.fields import Field
+from aiorm.orm.contexts import Demo
+from aiorm.orm.fields import Field
 
 
 def test_demo():

@@ -1,5 +1,5 @@
 import asyncio
-from norm.orm.connections import AbstractConnection
+from aiorm.orm.connections import AbstractConnection
 
 
 class DataBaseDriver(object):

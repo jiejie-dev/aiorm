@@ -4,7 +4,7 @@ from logging import Logger
 import aiomysql
 from aiocontext import async_contextmanager
 
-from norm.orm.query import QueryCompiler, Query, InsertQuery
+from aiorm.orm.query import QueryCompiler, Query, InsertQuery
 
 from abc import abstractmethod, ABCMeta
 
@@ -53,7 +53,7 @@ class Connection(AbstractConnection):
         self._connection = conn
         self.compiler = compiler
 
-        self.logger = logger if logger is not None else logging.getLogger('norm')
+        self.logger = logger if logger is not None else logging.getLogger('aiorm')
         self.logger.setLevel(logging.DEBUG)
 
         self._transactions = 0

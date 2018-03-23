@@ -1,10 +1,10 @@
 import logging
 
-from norm.orm.fields import Field
-from norm.orm.query import QueryClause
-from norm.orm.utils import escaped_fields
+from aiorm.orm.fields import Field
+from aiorm.orm.query import QueryClause
+from aiorm.orm.utils import escaped_fields
 
-_logger = logging.getLogger('norm')
+_logger = logging.getLogger('aiorm')
 
 
 class ModelMetaclass(type):

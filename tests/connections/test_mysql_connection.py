@@ -1,7 +1,7 @@
 import pytest
 import mock
 
-from norm.orm.connections import AbstractConnection, Connection
+from aiorm.orm.connections import AbstractConnection, Connection
 from sample.norm_bench import DemoUser
 
 
