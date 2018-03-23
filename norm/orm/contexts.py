@@ -1,4 +1,5 @@
-from norm.models.model_base import Model, IntegerField, StringField, UUIDField
+from norm.orm.fields import UUIDField, StringField
+from norm.orm.models import Model
 
 
 class DbSet(object):
@@ -20,10 +21,11 @@ class DbSet(object):
 
 class DbContext(object):
 
-    def initalize(self):
-        pass
+    def __init__(self, connection, database):
+        self.connection = connection
+        self.database = database
 
-    def save_changes(self):
+    async def save_changes(self):
         pass
 
 

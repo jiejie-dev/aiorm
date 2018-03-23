@@ -1,6 +1,6 @@
 import logging
 
-from norm.models.fields import ForeignKeyField
+from norm.orm.fields import ForeignKeyField
 
 _logger = logging.getLogger('norm')
 
@@ -126,17 +126,23 @@ class JoinClause(object):
 
 
 class Query(object):
-    """ Represent a query like select, insert, update, delete"""
-
-    def __init__(self, model):
+    def __init__(self, model=None, session=None):
         self.model = model
+        self.session = session
+
+
+class SelectQuery(Query):
+    """ Represent a querys like select, insert, update, delete"""
+
+    def __init__(self, model, session=None):
+        super(SelectQuery, self).__init__(model, session)
+
         self.table_name = getattr(model, '__table__', None)
 
         self._where = None
         self._orderby = []
         self._limit = 0
         self._offset = 0
-        self._include = []
 
         self._args = []
 
@@ -144,25 +150,7 @@ class Query(object):
 
         self._join = []
 
-    def select(self):
-        self.method = 'SELECT'
-        return self
-
-    def update(self):
-        self.method = 'UPDATE'
-        return self
-
-    def delete(self):
-        self.method = 'DELETE'
-        return self
-
-    def insert(self, data, **kwargs):
-        self.method = 'INSERT'
-        self.data = data
-        return self
-
-    def include(self, model):
-        self._include.append(model)
+    def select(self, fields=None):
         return self
 
     def where(self, query_impl):
@@ -181,3 +169,66 @@ class Query(object):
         last_model = self._join[-1].right if len(self._join) > 0 else self.model
         self._join.append(JoinClause(last_model, model, type))
         return self
+
+    def paginate(self, page_index=1, page_size=10):
+        self._limit = page_size
+        self._offset = (page_index - 1) * page_size
+        return self
+
+    def limit(self, limit):
+        self._limit = limit
+        return self
+
+    def offset(self, offset):
+        self._offset = offset
+        return self
+
+
+class UpdateQuery(Query):
+
+    def __init__(self, model, session=None):
+        super(UpdateQuery, self).__init__(model, session)
+
+    def update(self, **kwargs):
+        raise NotImplementedError()
+
+    def where(self, **kwargs):
+        raise NotImplementedError()
+
+
+class InsertQuery(Query):
+    def __init__(self, data, session=None):
+        super(InsertQuery, self).__init__(type(data), session)
+
+        self.data = data
+
+    def insert(self, data, **kwargs):
+        self.data = data
+        return self
+
+
+class DeleteQuery(Query):
+    def __init__(self, model, session=None):
+        super(DeleteQuery, self).__init__(model, session)
+
+    def delete(self, **kwargs):
+        raise NotImplementedError()
+
+    def where(self, **kwargs):
+        raise NotImplementedError()
+
+
+class QueryCompiler(object):
+    maker = '?'
+
+    def compile(self, query) -> str:
+        NotImplementedError()
+
+    def raw_sql(self, query) -> str:
+        if isinstance(query, str):
+            return query
+
+        sql = self.compile(query)
+        for item in query._args:
+            sql = sql.replace(self.maker, item, 1)
+        return sql

@@ -1,9 +1,9 @@
-import mock
 
-from norm.connections.connections import IConnection
-from norm.drivers import MySQLDataBaseDriver, DataBaseEngine
 import pytest
-from tests.configtest import configs
+
+from norm.backends.mysql.driver import MySQLDataBaseDriver
+from norm.orm.connections import Connection
+from sample.models import configs
 
 
 @pytest.fixture()
@@ -16,7 +16,7 @@ async def driver(event_loop):
 
 @pytest.fixture()
 async def connection(driver):
-    return await driver.get_connection()
+    return await driver.connection()
 
 
 @pytest.mark.asyncio
@@ -25,22 +25,13 @@ async def test_get_connection(event_loop):
 
     await driver.initialize(event_loop, configs['mysql'])
 
-    connection = await driver.get_connection()
+    connection = await driver.connection()
     assert connection is not None
-    assert isinstance(connection, IConnection)
+    assert isinstance(connection, Connection)
     assert await connection.execute('SHOW TABLES', None) > 0
 
 
 @pytest.mark.asyncio
 async def test_fixture(driver, connection):
     assert isinstance(driver, MySQLDataBaseDriver)
-    assert isinstance(connection, IConnection)
-
-
-@pytest.mark.asyncio
-async def test_driver_manager(event_loop):
-    manager = DataBaseEngine()
-    manager.initialize(event_loop, configs)
-
-    get_driver = manager.get_driver('mysql')
-    assert isinstance(get_driver, MySQLDataBaseDriver)
+    assert isinstance(connection, Connection)

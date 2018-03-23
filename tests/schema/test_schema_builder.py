@@ -1,6 +1,10 @@
-from norm.schema.builder import SchemaBuilder
+from norm.orm.schema import SchemaBuilder
 from sample.models import DemoUser, DemoUserProfile
 from unittest import TestCase
+
+
+from tests.configtest import format_sql
+
 
 class TestSchemaBuilderCase(TestCase):
     def setUp(self):
@@ -8,12 +12,11 @@ class TestSchemaBuilderCase(TestCase):
 
     def test_schema_builder(self):
         sql = self.builder.create_table(DemoUser)
-        assert sql == """CREATE TABLE DemoUser (
-	id VARCHAR(40) primary key,
-	name varchar(100) 
-)"""
+        assert format_sql(sql) == format_sql("""CREATE TABLE DemoUser 
+                          (id VARCHAR(40) PRIMARY KEY,name VARCHAR(100) )
+                        """)
         sql = self.builder.drop_table(DemoUser)
-        assert sql == """DROP TABLE DemoUser IF EXISTS """
+        assert format_sql(sql) == format_sql("""DROP TABLE IF EXISTS DemoUser """)
 
     def test_drop_tables(self):
         sql = self.builder.drop_tables([DemoUser, DemoUserProfile])

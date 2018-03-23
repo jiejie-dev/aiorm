@@ -1,9 +1,7 @@
-from norm.models.model_base import Model
-from norm.models.fields import StringField, IntegerField
-from norm.query.query_base import Query, _foregin_fields
-from norm.query.query_compiler import MySQLQueryCompiler
 import pytest
 
+from norm.backends.mysql.compiler import MySQLQueryCompiler
+from norm.orm.query import _foregin_fields, SelectQuery
 from sample.norm_bench import DemoUserProfile, DemoUser, DemoPermission
 
 
@@ -14,14 +12,14 @@ def query_compiler():
 
 def test_select_query_compile():
     compiler = MySQLQueryCompiler()
-    query = Query(DemoUser).select()
+    query = SelectQuery(DemoUser)
     rs = compiler.compile(query)
-    assert rs[0].lower() == 'SELECT * FROM Demo'.lower()
+    assert rs[0].lower() == 'SELECT * FROM DemoUser'.lower()
     assert len(rs[1]) == 0
 
 
 def test_select_query():
-    query = Query(DemoUser).select().where(DemoUser.name == 'lujiejie')
+    query = SelectQuery(DemoUser).where(DemoUser.name == 'lujiejie')
     compiler = MySQLQueryCompiler()
     rs = compiler.compile(query)
     assert rs[0].lower() == "SELECT * FROM DemoUser WHERE ( demouser.name = ? )".lower()
@@ -37,14 +35,14 @@ def test_insert_query(query_compiler: MySQLQueryCompiler):
 
 
 def test_select_foreign():
-    query = Query(DemoUser).select().where(DemoUserProfile.user == 'jeremaihloo')
+    query = SelectQuery(DemoUser).where(DemoUserProfile.user == 'jeremaihloo')
     compiler = MySQLQueryCompiler()
     rs = compiler.compile(query)
     print(rs)
 
 
 def test_join():
-    query = Query(DemoUser).select().join(DemoUserProfile).join(DemoPermission).where(
+    query = SelectQuery(DemoUser).join(DemoUserProfile).join(DemoPermission).where(
         DemoUserProfile.name == 'jeremaihloo'
     )
     compiler = MySQLQueryCompiler()

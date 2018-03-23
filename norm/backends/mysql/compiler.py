@@ -1,36 +1,16 @@
-from norm.models.utils import create_args_string
-from norm.query import types
-from norm.query.query_base import Query
-
-
-class QueryCompiler(object):
-    maker = '?'
-
-    def compile(self, query) -> str:
-        NotImplementedError()
-
-    def raw_sql(self, query) -> str:
-        if isinstance(query, str):
-            return query
-
-        sql = self.compile(query)
-        for item in query._args:
-            sql = sql.replace(self.maker, item, 1)
-        return sql
+from norm.orm.query import QueryCompiler, Query, SelectQuery, InsertQuery
+from norm.orm.utils import create_args_string
 
 
 class MySQLQueryCompiler(QueryCompiler):
-    templates = {
-        types.SELECT: "SELECT {query_fields} FROM {_table_name}{_join}{_where}{_order_by}{_limit}{_offset}",
-        types.INSERT: "INSERT INTO {_table_name} ({_fields}) VALUES ({_values})",
-        types.SHOW_TABLES: "SHOW TABLES",
-        types.DELETE: "DELETE FROM {_table_name} WHERE {_where}"
-    }
+    __template_select__ = "SELECT {query_fields} FROM {_table_name}{_join}{_where}{_order_by}{_limit}{_offset}"
+    __template_insert__ = "INSERT INTO {_table_name} ({_fields}) VALUES ({_values})"
+    __template_delete__ = "DELETE FROM {_table_name} WHERE {_where}"
 
     def compile(self, query):
-        if query.method == types.SELECT:
+        if isinstance(query, SelectQuery):
             return self.compile_select(query)
-        if query.method == types.INSERT:
+        if isinstance(query, InsertQuery):
             return self.compile_insert(query.data)
         return query, None
 
@@ -50,7 +30,7 @@ class MySQLQueryCompiler(QueryCompiler):
         limit_str = ' LIMIT {}'.format(query._limit) if query._limit > 0 else ''
 
         offset_str = ' OFFSET {}'.format(query._offset) if query._offset > 0 else ''
-        t = self.templates[query.method]
+        t = self.__template_select__
 
         return t.format(query_fields='*',
                         _table_name=query.table_name,

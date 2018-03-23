@@ -1,49 +1,55 @@
 import logging
-from contextlib import contextmanager
 from logging import Logger
 
 import aiomysql
-
-from norm.query.query_base import Query
-from norm.query.query_compiler import QueryCompiler
 from aiocontext import async_contextmanager
 
+from norm.orm.query import QueryCompiler, Query, InsertQuery
 
-class IConnection(object):
+from abc import abstractmethod, ABCMeta
 
-    async def select_one(self, query):
-        raise NotImplementedError()
 
+class AbstractConnection(object, metaclass=ABCMeta):
+
+    @abstractmethod
     async def select(self, query):
         raise NotImplementedError()
 
+    @abstractmethod
     async def insert(self, query):
         raise NotImplementedError()
 
+    @abstractmethod
     async def update(self, query):
         raise NotImplementedError()
 
+    @abstractmethod
     async def delete(self, query):
         raise NotImplementedError()
 
+    @abstractmethod
     async def transaction(self):
         raise NotImplementedError()
 
+    @abstractmethod
     async def begin_transaction(self):
         raise NotImplementedError()
 
+    @abstractmethod
     async def commit(self):
         raise NotImplementedError()
 
+    @abstractmethod
     async def rollback(self):
         raise NotImplementedError()
 
+    @abstractmethod
     async def execute(self, sql, args):
         raise NotImplementedError()
 
 
-class Connection(IConnection):
-    def __init__(self, conn, compiler: QueryCompiler = None, logger: Logger = None):
+class Connection(AbstractConnection):
+    def __init__(self, conn: aiomysql.Connection, compiler: QueryCompiler = None, logger: Logger = None):
         self._connection = conn
         self.compiler = compiler
 
@@ -88,35 +94,29 @@ class Connection(IConnection):
     def transaction_level(self):
         return self._transactions
 
-    async def new_cursor(self):
-        pass
-
     async def execute(self, sql, args=None):
-        cursor = await self.new_cursor()
-        # self.logger.debug(sql, args)
+        cursor = await self._connection.cursor()
+
         await cursor.execute(sql, args)
-        # affected = cursor.rowcount
-        # await cursor.close()
-        # return affected
+        affected = cursor.rowcount
+        await cursor.close()
+        return affected
 
     async def insert(self, query_or_data):
 
-        if not isinstance(query_or_data, Query):
-            query = Query(None).insert(query_or_data)
+        if not isinstance(query_or_data, InsertQuery):
+            query = InsertQuery(query_or_data)
         else:
             query = query_or_data
 
         exe_query, args = self.compiler.compile(query)
+        async with self._connection.cursor() as cursor:
 
-        cursor = await self.new_cursor()
+            await cursor.execute(exe_query, args)
 
-        # self.logger.debug(self.compiler.raw_sql(query))
-
-        await cursor.execute(exe_query, args)
-
-        # affected = cursor.rowcount
-        # await cursor.close()
-        # return affected
+            affected = cursor.rowcount
+            await cursor.close()
+            return affected
 
     async def select(self, query):
         if isinstance(query, Query):
@@ -124,7 +124,7 @@ class Connection(IConnection):
         else:
             exe_query, args = query, None
 
-        cursor = await self.new_cursor()
+        cursor = await self._connection.cursor()
 
         self.logger.debug(self.compiler.raw_sql(exe_query), args)
 

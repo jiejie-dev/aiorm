@@ -1,13 +1,12 @@
 import pytest
 
-from norm.schema.manager import SchemaManager
-from tests.configtest import DemoUser
-from tests.test_drivers import driver, connection
+from norm.orm.schema import SchemaManager, SchemaBuilder
+from sample.models import DemoUser
 
 
 @pytest.fixture()
 async def schema_manager(connection):
-    manager = SchemaManager(connection)
+    manager = SchemaManager(connection, SchemaBuilder())
     return manager
 
 

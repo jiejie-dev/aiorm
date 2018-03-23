@@ -1,9 +1,8 @@
 import logging
-import uuid
 
-from norm.models import utils
-from norm.models.fields import Field
-from norm.query.query_base import QueryClause
+from norm.orm.fields import Field
+from norm.orm.query import QueryClause
+from norm.orm.utils import escaped_fields
 
 _logger = logging.getLogger('norm')
 
@@ -74,4 +73,4 @@ class Model(dict, metaclass=ModelMetaclass):
         return value
 
     def escaped_fields(self):
-        return utils.escaped_fields(self.__fields__)
+        return escaped_fields(self.__fields__)

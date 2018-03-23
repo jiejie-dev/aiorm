@@ -1,5 +1,6 @@
-from norm.models.model_base import Field
-from tests.configtest import Demo
+from norm.orm.contexts import Demo
+from norm.orm.fields import Field
+
 
 def test_demo():
     assert getattr(Demo, '__table__') == 'Demo'
