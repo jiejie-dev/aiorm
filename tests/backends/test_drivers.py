@@ -1,8 +1,7 @@
-
 import pytest
 
+from aiorm.backends.base import DataBaseDriver
 from aiorm.backends.mysql.driver import MySQLDataBaseDriver
-from aiorm.orm.connections import Connection
 from sample.models import configs
 
 
@@ -14,24 +13,8 @@ async def driver(event_loop):
     return driver
 
 
-@pytest.fixture()
-async def connection(driver):
-    return await driver.connection()
-
-
-@pytest.mark.asyncio
-async def test_get_connection(event_loop):
-    driver = MySQLDataBaseDriver()
-
-    await driver.initialize(event_loop, configs['mysql'])
-
-    connection = await driver.connection()
-    assert connection is not None
-    assert isinstance(connection, Connection)
-    assert await connection.execute('SHOW TABLES', None) > 0
-
-
-@pytest.mark.asyncio
-async def test_fixture(driver, connection):
-    assert isinstance(driver, MySQLDataBaseDriver)
-    assert isinstance(connection, Connection)
+def test_get_driver():
+    driver = DataBaseDriver.get(configs)
+    assert isinstance(driver, DataBaseDriver)
+    driver = DataBaseDriver.get(configs, name='mysql')
+    assert isinstance(driver, DataBaseDriver)

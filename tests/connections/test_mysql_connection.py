@@ -1,20 +1,21 @@
 import pytest
 import mock
 
-from aiorm.orm.connections import AbstractConnection, Connection
-from sample.norm_bench import DemoUser
+from aiorm.backends.base import AbstractConnection
+from aiorm.backends.mysql.connection import MySQLConnection
+from sample.models import DemoUser
 
 
 @pytest.mark.asyncio
 async def test_mysql_connection():
-    connection = Connection(None)
+    connection = MySQLConnection(None)
     assert isinstance(connection, AbstractConnection)
 
 
 class ConnectionTestCase(object):
 
     async def test_transaction(self):
-        connection = Connection(None)
+        connection = MySQLConnection(None)
         connection.begin_transaction = mock.MagicMock(unsafe=True)
         connection.commit = mock.MagicMock(unsafe=True)
         connection.rollback = mock.MagicMock(unsafe=True)

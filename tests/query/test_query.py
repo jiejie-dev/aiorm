@@ -2,7 +2,7 @@ import pytest
 
 from aiorm.backends.mysql.compiler import MySQLQueryCompiler
 from aiorm.orm.query import _foregin_fields, SelectQuery
-from sample.norm_bench import DemoUserProfile, DemoUser, DemoPermission
+from sample.models import DemoUserProfile, DemoUser, DemoPermission
 
 
 @pytest.fixture()

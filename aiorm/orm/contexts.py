@@ -1,6 +1,4 @@
 from aiorm.backends.base import DataBaseDriver, AbstractDataSet, QueryCompiler
-from aiorm.orm.fields import UUIDField, StringField
-from aiorm.orm.models import Model
 from aiorm.orm.query import *
 
 
@@ -44,7 +42,7 @@ class DbSet(object):
 
 class DbContext(object):
 
-    def __init__(self, **configs):
+    def __init__(self, loop, **configs):
         self.configs = configs
 
         self.driver = DataBaseDriver.get(configs)
@@ -52,8 +50,10 @@ class DbContext(object):
 
         self.connection = self.driver.connection()
 
-    async def begin(self, loop):
-        await self.driver.initialize(loop, self.configs[self.driver.NAME])
+        self.loop = loop
+
+    async def begin(self):
+        await self.driver.initialize(self.loop, self.configs[self.driver.NAME])
         await self.connection.connect()
         await self.connection.begin_transaction()
         return self
