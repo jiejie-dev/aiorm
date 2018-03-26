@@ -2,8 +2,7 @@ import aiomysql
 import asyncio
 
 from aiorm.backends.base import DataBaseDriver
-from aiorm.backends.mysql.compiler import MySQLQueryCompiler
-from aiorm.orm.connections import Connection
+from aiorm.backends.mysql.connection import MySQLConnection
 
 
 class MySQLDataBaseDriver(DataBaseDriver):
@@ -25,7 +24,8 @@ class MySQLDataBaseDriver(DataBaseDriver):
             loop=loop
         )  # type: aiomysql.Pool
 
-    async def connection(self) -> Connection:
-        _conn = await self.pool.acquire() # type: aiomysql.Connection
-        await _conn.begin()
-        return Connection(_conn, compiler=MySQLQueryCompiler())
+    def connection(self):
+        return MySQLConnection(self)
+
+    async def close(self):
+        await self.pool.close()

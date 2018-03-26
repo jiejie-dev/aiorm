@@ -130,6 +130,9 @@ class Query(object):
         self.model = model
         self.session = session
 
+    async def run(self):
+        await self.session.run(self)
+
 
 class SelectQuery(Query):
     """ Represent a querys like select, insert, update, delete"""
@@ -218,17 +221,11 @@ class DeleteQuery(Query):
         raise NotImplementedError()
 
 
-class QueryCompiler(object):
-    maker = '?'
+class CreateTableQuery(Query):
+    def __init__(self, model, session=None):
+        super(CreateTableQuery, self).__init__(model, session)
 
-    def compile(self, query) -> str:
-        NotImplementedError()
 
-    def raw_sql(self, query) -> str:
-        if isinstance(query, str):
-            return query
-
-        sql = self.compile(query)
-        for item in query._args:
-            sql = sql.replace(self.maker, item, 1)
-        return sql
+class DropTableQuery(Query):
+    def __init__(self, model, session=None):
+        super(DropTableQuery, self).__init__(model, session)

@@ -18,7 +18,7 @@ from norms.schema.manager import SchemaManager
 configs = {
     'user': 'root',
     'password': 'root',
-    'name': 'ncms',
+    'db': 'ncms',
     'port': 3309
 }
 
