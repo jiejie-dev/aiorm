@@ -17,7 +17,7 @@ class MySQLDataBaseDriver(DataBaseDriver):
             port=kw.get('port', 3306),
             user=kw['user'],
             password=kw['password'],
-            db=kw['name'],
+            db=kw['db'],
             charset=kw.get('charset', 'utf8'),
             autocommit=kw.get('autocommit', True),
             maxsize=kw.get('pool_maxsize', 10),
@@ -26,6 +26,6 @@ class MySQLDataBaseDriver(DataBaseDriver):
         )  # type: aiomysql.Pool
 
     async def connection(self) -> Connection:
-        _conn = await self.pool.acquire()
+        _conn = await self.pool.acquire() # type: aiomysql.Connection
         await _conn.begin()
         return Connection(_conn, compiler=MySQLQueryCompiler())

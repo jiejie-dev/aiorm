@@ -13,15 +13,15 @@ async def test_mysql_connection():
 
 class ConnectionTestCase(object):
 
-    def test_transaction(self):
+    async def test_transaction(self):
         connection = Connection(None)
         connection.begin_transaction = mock.MagicMock(unsafe=True)
         connection.commit = mock.MagicMock(unsafe=True)
         connection.rollback = mock.MagicMock(unsafe=True)
         connection.insert = mock.MagicMock(return_value=1)
 
-        with connection.transaction():
-            connection.insert(DemoUser())
+        async with await connection.transaction():
+            await connection.insert(DemoUser())
 
         connection.begin_transaction.assert_called_once()
         connection.commit.assert_called_once()
@@ -32,8 +32,8 @@ class ConnectionTestCase(object):
         connection.rollback.reset_mock()
 
         try:
-            with connection.transaction():
-                connection.insert(DemoUser())
+            async with await connection.transaction():
+                await connection.insert(DemoUser())
                 raise Exception('foo')
         except Exception as e:
             self.assertEqual('foo', str(e))

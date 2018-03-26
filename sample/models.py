@@ -6,7 +6,7 @@ configs = {
     'mysql': {
         'user': 'root',
         'password': 'root',
-        'name': 'ncms',
+        'db': 'ncms',
         'port': 3309
     }
 }

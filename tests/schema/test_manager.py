@@ -1,11 +1,14 @@
 import pytest
 
+from aiorm.backends.base import DataBaseDriver
 from aiorm.orm.schema import SchemaManager, SchemaBuilder
 from sample.models import DemoUser
+from tests.configtest import driver
 
 
 @pytest.fixture()
-async def schema_manager(connection):
+async def schema_manager(driver: DataBaseDriver):
+    connection = await driver.connection()
     manager = SchemaManager(connection, SchemaBuilder())
     return manager
 
