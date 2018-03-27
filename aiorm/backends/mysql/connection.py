@@ -5,6 +5,7 @@ from aiocontext import async_contextmanager
 
 from aiorm.backends.base import AbstractConnection, DataBaseDriver
 from aiorm.backends.mysql.dataset import MySQLDataSet
+from aiorm.orm.errors import AiormDbError
 
 logger = logging.getLogger('aiorm')
 logger.setLevel(logging.DEBUG)
@@ -67,12 +68,15 @@ class MySQLConnection(AbstractConnection):
         try:
             res = await cursor.execute(sql, args)
         except:
-            raise
+            raise AiormDbError('{} {}'.format(sql, args))
         finally:
             await cursor.close()
         return res
 
     async def cursor(self, sql, args):
-        cursor = await self._connection.cursor(aiomysql.DictCursor)
-        await cursor.execute(sql, args)
-        return MySQLDataSet(cursor)
+        try:
+            cursor = await self._connection.cursor(aiomysql.DictCursor)
+            await cursor.execute(sql, args)
+            return MySQLDataSet(cursor)
+        except:
+            raise AiormDbError('{} {}'.format(sql, args))

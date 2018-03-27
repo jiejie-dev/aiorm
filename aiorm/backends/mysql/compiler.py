@@ -1,10 +1,11 @@
 from aiorm.backends.base import QueryCompiler
+from aiorm.orm.errors import AiormQueryCompilerError
 from aiorm.orm.query import (Query,
                              SelectQuery,
                              InsertQuery,
                              UpdateQuery,
                              DropTableQuery,
-                             CreateTableQuery, DeleteQuery)
+                             CreateTableQuery, DeleteQuery, ShowTablesQuery)
 from aiorm.orm.utils import create_args_string
 
 
@@ -26,7 +27,9 @@ class MySQLQueryCompiler(QueryCompiler):
             return self.compile_drop_table(query)
         if isinstance(query, CreateTableQuery):
             return self.compile_create_table(query)
-        raise Exception('query')
+        if isinstance(query, ShowTablesQuery):
+            return self.compile_show_tables(query)
+        raise AiormQueryCompilerError(query)
 
     def compile_select(self, query: Query):
         join_builds = [x.build() for x in query._join]
@@ -97,3 +100,6 @@ class MySQLQueryCompiler(QueryCompiler):
             args.append(str(f))
         sql = 'CREATE TABLE {} ( {})'.format(getattr(query.model, '__table__'), ','.join(args))
         return sql, None
+
+    def compile_show_tables(self, query: ShowTablesQuery):
+        return "SHOW TABLES", None

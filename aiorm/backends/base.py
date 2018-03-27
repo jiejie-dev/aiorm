@@ -72,7 +72,7 @@ class AbstractConnection(object, metaclass=ABCMeta):
         raise NotImplementedError()
 
     @abstractmethod
-    async def cursor(self, sql, args):
+    async def cursor(self, sql, args) -> 'AbstractDataSet':
         raise NotImplementedError()
 
 
@@ -84,6 +84,10 @@ class AbstractDataSet(object, metaclass=ABCMeta):
 
     @abstractmethod
     async def fetch_many(self, n):
+        raise NotImplementedError()
+
+    @abstractmethod
+    async def fetch_all(self):
         raise NotImplementedError()
 
     @abstractmethod

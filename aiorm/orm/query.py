@@ -229,3 +229,8 @@ class CreateTableQuery(Query):
 class DropTableQuery(Query):
     def __init__(self, model, session=None):
         super(DropTableQuery, self).__init__(model, session)
+
+
+class ShowTablesQuery(Query):
+    def __init__(self):
+        super(ShowTablesQuery, self).__init__(None, None)

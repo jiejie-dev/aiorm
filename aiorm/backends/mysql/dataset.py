@@ -9,10 +9,13 @@ class MySQLDataSet(AbstractDataSet):
         self.cursor = cursor
 
     async def fetch_one(self):
-        return self.cursor.fetchone()
+        return await self.cursor.fetchone()
 
     async def fetch_many(self, n):
-        return self.cursor.fetchmany(n)
+        return await self.cursor.fetchmany(n)
 
     async def fetch_all(self):
-        return self.cursor.fetchall()
+        return await self.cursor.fetchall()
+
+    async def close(self):
+        await self.cursor.close()

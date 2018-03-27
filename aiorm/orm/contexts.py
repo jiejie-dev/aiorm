@@ -72,8 +72,12 @@ class DbContext(object):
             prop.db = self
         return prop
 
-    async def create_tables(self, tables):
+    async def create_tables(self, tables, safe=True):
+        e_tables = await self.show_tables()
+
         for item in tables:
+            if safe and item.__table__ in e_tables:
+                continue
             sql, args = self.compiler.compile(CreateTableQuery(item))
             await self.connection.execute(sql, args)
 
@@ -81,3 +85,12 @@ class DbContext(object):
         for item in tables:
             sql, args = self.compiler.compile(DropTableQuery(item))
             await self.connection.execute(sql, args)
+
+    async def show_tables(self):
+        sql, args = self.compiler.compile(ShowTablesQuery())
+        dt = await self.connection.cursor(sql, args)
+        tables = []
+        for item in await dt.fetch_all():
+            for k, v in item.items():
+                tables.append(v)
+        return tables
