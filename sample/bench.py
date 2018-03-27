@@ -3,39 +3,34 @@ import asyncio
 import time
 
 from aiorm.orm.contexts import DbContext, DbSet
-from aiorm.orm.fields import UUIDField, StringField
-from aiorm.orm.models import Model
-from sample.models import configs as demo_configs
-
-
-class Demo(Model):
-    id = UUIDField(primary_key=True)
-    name = StringField()
+from sample.models import configs as demo_configs, DemoUser, DemoUserProfile, DemoPermission
 
 
 class DemoDbContext(DbContext):
-    demos = DbSet(Demo)
+    users = DbSet(DemoUser)
+    profiles = DbSet(DemoUserProfile)
+    permissions = DbSet(DemoPermission)
 
 
 async def _main(loop):
     context = DemoDbContext(loop, **demo_configs)
     await context.begin()
 
-    await context.drop_tables([Demo])
-    await context.create_tables([Demo])
+    await context.drop_tables([DemoUser, DemoUserProfile, DemoPermission])
+    await context.create_tables([DemoUser, DemoUserProfile, DemoPermission])
 
     t1 = time.time()
 
     for index in range(1000):
-        demo = Demo()
-        await context.demos.add(demo)
+        demo = DemoUser()
+        await context.users.add(demo)
     await context.save_changes()
 
     t2 = time.time()
     print(t2 - t1)
 
     demo.name = 'jeremaihloo'
-    await context.demos.update(demo)
+    await context.users.update(demo)
     await context.save_changes()
 
 

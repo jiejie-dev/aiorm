@@ -62,7 +62,7 @@ class MySQLConnection(AbstractConnection):
         return self._transactions
 
     async def execute(self, sql, args=None):
-        logger.debug(sql, args)
+        logger.debug('{} {}'.format(sql, args))
 
         cursor = await self._connection.cursor(aiomysql.DictCursor)
         try:
@@ -74,6 +74,7 @@ class MySQLConnection(AbstractConnection):
         return res
 
     async def cursor(self, sql, args):
+        logger.debug('{} {}'.format(sql, args))
         try:
             cursor = await self._connection.cursor(aiomysql.DictCursor)
             await cursor.execute(sql, args)

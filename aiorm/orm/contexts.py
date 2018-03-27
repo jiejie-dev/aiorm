@@ -7,6 +7,14 @@ class DbSet(object):
         self.model = model
         self.db = None  # type: DbContext
 
+    async def get(self, **kwargs):
+        query = SelectQuery(self.model, self)
+        for key, val in kwargs:
+            query.where(key == val)
+        sql, args = self.db.compiler.compile(query)
+        cursor = await self.db.connection.cursor(sql, args)
+        return await cursor.fetch_one()
+
     async def add(self, data):
         sql, args = self.db.compiler.compile(InsertQuery(data))
         return await self.db.connection.execute(sql, args)
@@ -24,20 +32,20 @@ class DbSet(object):
         return await self.db.connection.execute(sql, args)
 
     def select_query(self) -> 'SelectQuery':
-        return SelectQuery(self.model)
+        return SelectQuery(self.model, self)
 
     def delete_query(self) -> 'DeleteQuery':
-        return DeleteQuery(self.model)
+        return DeleteQuery(self.model, self)
 
     def insert_query(self) -> 'InsertQuery':
-        return InsertQuery(self.model)
+        return InsertQuery(self.model, self)
 
     def update_query(self) -> 'UpdateQuery':
-        return UpdateQuery(self.model)
+        return UpdateQuery(self.model, self)
 
     async def run(self, query) -> AbstractDataSet:
         sql, args = self.db.compiler.compile(query)
-        return await self.db.connection.execute(sql, args)
+        return await self.db.connection.cursor(sql, args)
 
 
 class DbContext(object):

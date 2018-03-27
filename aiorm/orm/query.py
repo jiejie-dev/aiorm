@@ -131,7 +131,7 @@ class Query(object):
         self.session = session
 
     async def run(self):
-        await self.session.run(self)
+        return await self.session.run(self)
 
 
 class SelectQuery(Query):
