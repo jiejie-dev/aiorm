@@ -1,3 +1,4 @@
+from aiorm.orm.models import Model
 from aiorm.backends.base import DataBaseDriver, AbstractDataSet, QueryCompiler
 from aiorm.orm.query import *
 
@@ -8,44 +9,36 @@ class DbSet(object):
         self.db = None  # type: DbContext
 
     async def get(self, **kwargs):
-        query = SelectQuery(self.model, self)
+        query = SelectQuery(self.model)
         for key, val in kwargs:
             query.where(key == val)
         sql, args = self.db.compiler.compile(query)
         cursor = await self.db.connection.cursor(sql, args)
         return await cursor.fetch_one()
 
-    async def add(self, data):
+    async def add(self, data: Model):
         sql, args = self.db.compiler.compile(InsertQuery(data))
         return await self.db.connection.execute(sql, args)
 
-    async def remove(self, data):
+    async def remove(self, data: Model):
         sql, args = self.db.compiler.compile(DeleteQuery(data))
         return await self.db.connection.execute(sql, args)
 
-    async def count(self, query):
-        sql, args = self.db.compiler.compile(query)
-        return await self.db.connection.execute(sql, args)
-
-    async def update(self, data):
+    async def update(self, data: Model):
         sql, args = self.db.compiler.compile(UpdateQuery(data))
         return await self.db.connection.execute(sql, args)
 
     def select_query(self) -> 'SelectQuery':
-        return SelectQuery(self.model, self)
+        return SelectQuery(self.model)
 
     def delete_query(self) -> 'DeleteQuery':
-        return DeleteQuery(self.model, self)
+        return DeleteQuery(self.model)
 
     def insert_query(self) -> 'InsertQuery':
-        return InsertQuery(self.model, self)
+        return InsertQuery(self.model)
 
     def update_query(self) -> 'UpdateQuery':
-        return UpdateQuery(self.model, self)
-
-    async def run(self, query) -> AbstractDataSet:
-        sql, args = self.db.compiler.compile(query)
-        return await self.db.connection.cursor(sql, args)
+        return UpdateQuery(self.model)
 
 
 class DbContext(object):
@@ -102,3 +95,29 @@ class DbContext(object):
             for k, v in item.items():
                 tables.append(v)
         return tables
+
+    async def data(self, query) -> AbstractDataSet:
+        sql, args = self.compiler.compile(query)
+        return await self.connection.cursor(sql, args)
+
+    async def count(self, query: SelectQuery) -> int:
+        query._fields = ['count(1)']
+        sql, args = self.compiler.compile(query)
+        dt = await self.connection.cursor(sql, args)
+        item = await dt.fetch_one()
+        return item['count(1)']
+
+    async def fetch_all(self, query: SelectQuery):
+        sql, args = self.compiler.compile(query)
+        cursor = await self.connection.cursor(sql, args)
+        return await cursor.fetch_all()
+
+    async def fetch_many(self, query: SelectQuery):
+        sql, args = self.compiler.compile(query)
+        cursor = await self.connection.cursor(sql, args)
+        return await cursor.fetch_many()
+
+    async def fetch_one(self, query: SelectQuery):
+        sql, args = self.compiler.compile(query)
+        cursor = await self.connection.cursor(sql, args)
+        return await cursor.fetch_one()

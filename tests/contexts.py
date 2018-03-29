@@ -24,3 +24,10 @@ async def test_context_create_table(context: DemoDbContext):
     await context.create_tables([DemoUser])
     tables = await context.show_tables()
     assert 'DemoUser' in tables
+
+
+@pytestaio
+async def test_context_count(context:DemoDbContext):
+    query = context.users.select_query().where(DemoUser.name == 'jeremaihloo')
+    count = await context.users.count(query)
+    print(count)

@@ -22,7 +22,7 @@ def test_select_query():
     query = SelectQuery(DemoUser).where(DemoUser.name == 'lujiejie')
     compiler = MySQLQueryCompiler()
     rs = compiler.compile(query)
-    assert rs[0].lower() == "SELECT * FROM DemoUser WHERE ( demouser.name = ? )".lower()
+    assert rs[0].lower() == "SELECT * FROM DemoUser WHERE ( demouser.name = %s )".lower()
     assert rs[1][0] == "lujiejie"
 
 
@@ -53,3 +53,13 @@ def test_join():
 def test_foreign_fields():
     fields = _foregin_fields(DemoUserProfile)
     assert len(list(fields)) == 1
+
+
+def test_query_clone():
+    query_1 = SelectQuery(DemoUser).join(DemoUserProfile)
+    query_2 = query_1.where(DemoUser.name == 'jeremaihloo')
+    assert query_1 != query_2
+    assert query_1 is not query_2
+    compiler = MySQLQueryCompiler()
+    print(compiler.compile(query_2))
+    print(compiler.compile(query_2))

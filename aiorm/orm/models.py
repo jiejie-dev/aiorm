@@ -15,13 +15,13 @@ class ModelMetaclass(type):
         if name == 'Model':
             return type.__new__(cls, name, bases, attrs)
         table_name = attrs.get('__table__', None) or name
-        _logger.info('found model: %s (table: %s)' % (name, table_name))
+        _logger.debug('found model: %s (table: %s)' % (name, table_name))
         mappings = dict()
         fields = []
         primary_key = None
         for k, v in attrs.items():
             if isinstance(v, Field):
-                _logger.info('  found mapping: %s ==> %s' % (k, v))
+                _logger.debug('  found mapping: %s ==> %s' % (k, v))
                 if v.name is None:
                     v.name = k
                 mappings[k] = v

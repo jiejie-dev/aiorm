@@ -4,6 +4,24 @@ from aiorm.orm.fields import ForeignKeyField
 
 _logger = logging.getLogger('aiorm')
 
+import copy
+
+import functools
+
+
+def __sql__(self, ctx):
+    raise NotImplementedError
+
+
+def clone(func):
+    @functools.wraps(func)
+    def wrapper(self, *args, **kwargs):
+        cloned_obj = copy.deepcopy(self)
+        func(cloned_obj, *args, **kwargs)
+        return cloned_obj
+
+    return wrapper
+
 
 class QueryClause(object):
     def __init__(self, left=None, op=None, right=None):
@@ -41,7 +59,7 @@ class QueryClause(object):
         return ' '.join(strs), args
 
     def __str__(self):
-        return '{}{}{}'.format(self.left, self.op, self.right)
+        return '{} {} {}'.format(self.left, self.op, self.right)
 
     def __eq__(self, other):
         return QueryClause(self, '=', other)
@@ -126,19 +144,15 @@ class JoinClause(object):
 
 
 class Query(object):
-    def __init__(self, model=None, session=None):
+    def __init__(self, model=None):
         self.model = model
-        self.session = session
-
-    async def run(self):
-        return await self.session.run(self)
 
 
 class SelectQuery(Query):
     """ Represent a querys like select, insert, update, delete"""
 
-    def __init__(self, model, session=None):
-        super(SelectQuery, self).__init__(model, session)
+    def __init__(self, model):
+        super(SelectQuery, self).__init__(model)
 
         self.table_name = getattr(model, '__table__', None)
 
@@ -153,35 +167,46 @@ class SelectQuery(Query):
 
         self._join = []
 
+        self._fields = []
+
+    @clone
     def select(self, fields=None):
+        self._fields = fields or []
         return self
 
+    @clone
     def where(self, query_impl):
         self._where = self._where and query_impl if self._where else query_impl
         return self
 
+    @clone
     def order_by_asc(self, model_field):
         self._orderby.append(OrderbyAscImpl(model_field))
         return self
 
+    @clone
     def order_by_desc(self, model_field):
         self._orderby.append(OrderbyDescImpl(model_field))
         return self
 
+    @clone
     def join(self, model, type="INNER"):
         last_model = self._join[-1].right if len(self._join) > 0 else self.model
         self._join.append(JoinClause(last_model, model, type))
         return self
 
+    @clone
     def paginate(self, page_index=1, page_size=10):
         self._limit = page_size
         self._offset = (page_index - 1) * page_size
         return self
 
+    @clone
     def limit(self, limit):
         self._limit = limit
         return self
 
+    @clone
     def offset(self, offset):
         self._offset = offset
         return self
@@ -189,48 +214,53 @@ class SelectQuery(Query):
 
 class UpdateQuery(Query):
 
-    def __init__(self, model, session=None):
-        super(UpdateQuery, self).__init__(model, session)
+    def __init__(self, model):
+        super(UpdateQuery, self).__init__(model)
 
+    @clone
     def update(self, **kwargs):
         raise NotImplementedError()
 
+    @clone
     def where(self, **kwargs):
         raise NotImplementedError()
 
 
 class InsertQuery(Query):
-    def __init__(self, data, session=None):
-        super(InsertQuery, self).__init__(type(data), session)
+    def __init__(self, data):
+        super(InsertQuery, self).__init__(type(data))
 
         self.data = data
 
+    @clone
     def insert(self, data, **kwargs):
         self.data = data
         return self
 
 
 class DeleteQuery(Query):
-    def __init__(self, model, session=None):
-        super(DeleteQuery, self).__init__(model, session)
+    def __init__(self, model):
+        super(DeleteQuery, self).__init__(model)
 
+    @clone
     def delete(self, **kwargs):
         raise NotImplementedError()
 
+    @clone
     def where(self, **kwargs):
         raise NotImplementedError()
 
 
 class CreateTableQuery(Query):
-    def __init__(self, model, session=None):
-        super(CreateTableQuery, self).__init__(model, session)
+    def __init__(self, model):
+        super(CreateTableQuery, self).__init__(model)
 
 
 class DropTableQuery(Query):
-    def __init__(self, model, session=None):
-        super(DropTableQuery, self).__init__(model, session)
+    def __init__(self, model):
+        super(DropTableQuery, self).__init__(model)
 
 
 class ShowTablesQuery(Query):
     def __init__(self):
-        super(ShowTablesQuery, self).__init__(None, None)
+        super(ShowTablesQuery, self).__init__(None)

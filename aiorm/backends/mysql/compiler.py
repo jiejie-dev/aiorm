@@ -31,13 +31,13 @@ class MySQLQueryCompiler(QueryCompiler):
             return self.compile_show_tables(query)
         raise AiormQueryCompilerError(query)
 
-    def compile_select(self, query: Query):
+    def compile_select(self, query: SelectQuery):
         join_builds = [x.build() for x in query._join]
         join_str = ' '.join(join_builds)
-
+        args = []
         if query._where is not None:
             where_strs, where_args = query._where.build()
-            query._args.extend(where_args)
+            args.extend(where_args)
             where_strs = ' ' + where_strs
         else:
             where_strs = ''
@@ -48,14 +48,17 @@ class MySQLQueryCompiler(QueryCompiler):
 
         offset_str = ' OFFSET {}'.format(query._offset) if query._offset > 0 else ''
         t = self.__template_select__
+        query_fields = ', '.join(query._fields) if len(query._fields) > 0 else '*'
 
-        return t.format(query_fields='*',
-                        _table_name=query.table_name,
-                        _join=join_str,
-                        _where=' WHERE' + where_strs if where_strs != '' else '',
-                        _order_by=orderby_str,
-                        _limit=limit_str,
-                        _offset=offset_str), tuple(query._args)
+        sql = t.format(query_fields=query_fields,
+                       _table_name=query.table_name,
+                       _join=join_str,
+                       _where=' WHERE' + where_strs if where_strs != '' else '',
+                       _order_by=orderby_str,
+                       _limit=limit_str,
+                       _offset=offset_str)
+        sql = sql.replace(self.maker, '%s')
+        return sql, tuple(args)
 
     def compile_insert(self, data):
         if isinstance(data, UpdateQuery):
